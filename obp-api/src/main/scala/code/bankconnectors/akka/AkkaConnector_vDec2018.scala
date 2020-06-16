@@ -14,7 +14,7 @@ import com.openbankproject.commons.ExecutionContext.Implicits.global
 import com.openbankproject.commons.dto._
 import com.openbankproject.commons.model._
 import com.openbankproject.commons.model.enums.StrongCustomerAuthentication.SCA
-import com.openbankproject.commons.model.enums.{AccountAttributeType, CardAttributeType, ProductAttributeType}
+import com.openbankproject.commons.model.enums.{AccountAttributeType, CardAttributeType, CustomerAttributeType, ProductAttributeType, StrongCustomerAuthentication, TransactionAttributeType}
 import net.liftweb.common.Box
 
 import scala.collection.immutable.List
@@ -323,7 +323,7 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   }*/
 
 //---------------- dynamic start -------------------please don't modify this line
-// ---------- create on Mon Jun 15 12:48:47 CST 2020
+// ---------- create on Tue Jun 16 11:42:17 CST 2020
 
   messageDocs += getAdapterInfoDoc
   def getAdapterInfoDoc = MessageDoc(
@@ -352,14 +352,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getAdapterInfo(callContext: Option[CallContext]): Future[Box[(InboundAdapterInfoInternal, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetAdapterInfo => InBound, OutBoundGetAdapterInfo => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull )
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[InboundAdapterInfoInternal](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetAdapterInfo => OutBound, InBoundGetAdapterInfo => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[InboundAdapterInfoInternal](callContext))        
   }
           
   messageDocs += getChallengeThresholdDoc
@@ -389,14 +385,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getChallengeThreshold(bankId: String, accountId: String, viewId: String, transactionRequestType: String, currency: String, userId: String, userName: String, callContext: Option[CallContext]): OBPReturnType[Box[AmountOfMoney]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetChallengeThreshold => InBound, OutBoundGetChallengeThreshold => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, viewId, transactionRequestType, currency, userId, userName)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AmountOfMoney](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetChallengeThreshold => OutBound, InBoundGetChallengeThreshold => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, viewId, transactionRequestType, currency, userId, userName)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AmountOfMoney](callContext))        
   }
           
   messageDocs += getChargeLevelDoc
@@ -426,14 +418,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getChargeLevel(bankId: BankId, accountId: AccountId, viewId: ViewId, userId: String, userName: String, transactionRequestType: String, currency: String, callContext: Option[CallContext]): OBPReturnType[Box[AmountOfMoney]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetChargeLevel => InBound, OutBoundGetChargeLevel => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, viewId, userId, userName, transactionRequestType, currency)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AmountOfMoney](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetChargeLevel => OutBound, InBoundGetChargeLevel => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, viewId, userId, userName, transactionRequestType, currency)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AmountOfMoney](callContext))        
   }
           
   messageDocs += createChallengeDoc
@@ -460,15 +448,42 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
     adapterImplementation = Some(AdapterImplementation("- Core", 1))
   )
 
-  override def createChallenge(bankId: BankId, accountId: AccountId, userId: String, transactionRequestType: TransactionRequestType, transactionRequestId: String, scaMethod: Option[SCA], callContext: Option[CallContext]): OBPReturnType[Box[String]] = {
-    
+  override def createChallenge(bankId: BankId, accountId: AccountId, userId: String, transactionRequestType: TransactionRequestType, transactionRequestId: String, scaMethod: Option[StrongCustomerAuthentication.SCA], callContext: Option[CallContext]): OBPReturnType[Box[String]] = {
+        import com.openbankproject.commons.dto.{OutBoundCreateChallenge => OutBound, InBoundCreateChallenge => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, userId, transactionRequestType, transactionRequestId, scaMethod)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[String](callContext))        
+  }
+          
+  messageDocs += createChallengesDoc
+  def createChallengesDoc = MessageDoc(
+    process = "obp.createChallenges",
+    messageFormat = messageFormat,
+    description = "Create Challenges",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundCreateChallenges(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      accountId=AccountId(accountIdExample.value),
+      userIds=List(userIdExample.value),
+      transactionRequestType=TransactionRequestType(transactionRequestTypeExample.value),
+      transactionRequestId="string",
+      scaMethod=Some(com.openbankproject.commons.model.enums.StrongCustomerAuthentication.SMS))
+    ),
+    exampleInboundMessage = (
+     InBoundCreateChallenges(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=List("string"))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundCreateChallenge => InBound, OutBoundCreateChallenge => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, userId, transactionRequestType, transactionRequestId, scaMethod)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[String](callContext))
-
-
+  override def createChallenges(bankId: BankId, accountId: AccountId, userIds: List[String], transactionRequestType: TransactionRequestType, transactionRequestId: String, scaMethod: Option[StrongCustomerAuthentication.SCA], callContext: Option[CallContext]): OBPReturnType[Box[List[String]]] = {
+        import com.openbankproject.commons.dto.{OutBoundCreateChallenges => OutBound, InBoundCreateChallenges => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, userIds, transactionRequestType, transactionRequestId, scaMethod)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[String]](callContext))        
   }
           
   messageDocs += validateChallengeAnswerDoc
@@ -492,14 +507,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def validateChallengeAnswer(challengeId: String, hashOfSuppliedAnswer: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundValidateChallengeAnswer => InBound, OutBoundValidateChallengeAnswer => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , challengeId, hashOfSuppliedAnswer)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundValidateChallengeAnswer => OutBound, InBoundValidateChallengeAnswer => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, challengeId, hashOfSuppliedAnswer)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += getBankLegacyDoc
@@ -530,14 +541,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankLegacy(bankId: BankId, callContext: Option[CallContext]): Box[(Bank, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankLegacy => InBound, OutBoundGetBankLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankLegacy => OutBound, InBoundGetBankLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankCommons](callContext))        
   }
           
   messageDocs += getBankDoc
@@ -568,14 +575,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBank(bankId: BankId, callContext: Option[CallContext]): Future[Box[(Bank, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBank => InBound, OutBoundGetBank => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBank => OutBound, InBoundGetBank => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankCommons](callContext))        
   }
           
   messageDocs += getBanksLegacyDoc
@@ -605,14 +608,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBanksLegacy(callContext: Option[CallContext]): Box[(List[Bank], Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBanksLegacy => InBound, OutBoundGetBanksLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull )
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[BankCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBanksLegacy => OutBound, InBoundGetBanksLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[BankCommons]](callContext))        
   }
           
   messageDocs += getBanksDoc
@@ -642,14 +641,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBanks(callContext: Option[CallContext]): Future[Box[(List[Bank], Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBanks => InBound, OutBoundGetBanks => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull )
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[BankCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBanks => OutBound, InBoundGetBanks => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[BankCommons]](callContext))        
   }
           
   messageDocs += getBankAccountsForUserLegacyDoc
@@ -686,14 +681,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountsForUserLegacy(username: String, callContext: Option[CallContext]): Box[(List[InboundAccount], Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountsForUserLegacy => InBound, OutBoundGetBankAccountsForUserLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , username)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[InboundAccountCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountsForUserLegacy => OutBound, InBoundGetBankAccountsForUserLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, username)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[InboundAccountCommons]](callContext))        
   }
           
   messageDocs += getBankAccountsForUserDoc
@@ -730,14 +721,79 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountsForUser(username: String, callContext: Option[CallContext]): Future[Box[(List[InboundAccount], Option[CallContext])]] = {
-    
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountsForUser => OutBound, InBoundGetBankAccountsForUser => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, username)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[InboundAccountCommons]](callContext))        
+  }
+          
+  messageDocs += getUserDoc
+  def getUserDoc = MessageDoc(
+    process = "obp.getUser",
+    messageFormat = messageFormat,
+    description = "Get User",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetUser(name=usernameExample.value,
+      password="string")
+    ),
+    exampleInboundMessage = (
+     InBoundGetUser(status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= InboundUser(email=emailExample.value,
+      password="string",
+      displayName="string"))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountsForUser => InBound, OutBoundGetBankAccountsForUser => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , username)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[InboundAccountCommons]](callContext))
+  override def getUser(name: String, password: String): Box[InboundUser] = {
+        import com.openbankproject.commons.dto.{OutBoundGetUser => OutBound, InBoundGetUser => InBound}
+        val req = OutBound(name, password)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[InboundUser](None))        
+  }
+          
+  messageDocs += getBankAccountOldDoc
+  def getBankAccountOldDoc = MessageDoc(
+    process = "obp.getBankAccountOld",
+    messageFormat = messageFormat,
+    description = "Get Bank Account Old",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetBankAccountOld(bankId=BankId(bankIdExample.value),
+      accountId=AccountId(accountIdExample.value))
+    ),
+    exampleInboundMessage = (
+     InBoundGetBankAccountOld(status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= BankAccountCommons(accountId=AccountId(accountIdExample.value),
+      accountType=accountTypeExample.value,
+      balance=BigDecimal(balanceAmountExample.value),
+      currency=currencyExample.value,
+      name=bankAccountNameExample.value,
+      label=labelExample.value,
+      iban=Some(ibanExample.value),
+      number=bankAccountNumberExample.value,
+      bankId=BankId(bankIdExample.value),
+      lastUpdate=parseDate(bankAccountLastUpdateExample.value).getOrElse(sys.error("bankAccountLastUpdateExample.value is not validate date format.")),
+      branchId=branchIdExample.value,
+      accountRoutingScheme=accountRoutingSchemeExample.value,
+      accountRoutingAddress=accountRoutingAddressExample.value,
+      accountRoutings=List( AccountRouting(scheme=accountRoutingSchemeExample.value,
+      address=accountRoutingAddressExample.value)),
+      accountRules=List( AccountRule(scheme=accountRuleSchemeExample.value,
+      value=accountRuleValueExample.value)),
+      accountHolder=bankAccountAccountHolderExample.value))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-
+  override def getBankAccountOld(bankId: BankId, accountId: AccountId): Box[BankAccount] = {
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountOld => OutBound, InBoundGetBankAccountOld => InBound}
+        val req = OutBound(bankId, accountId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](None))        
   }
           
   messageDocs += getBankAccountLegacyDoc
@@ -778,14 +834,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountLegacy(bankId: BankId, accountId: AccountId, callContext: Option[CallContext]): Box[(BankAccount, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountLegacy => InBound, OutBoundGetBankAccountLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountLegacy => OutBound, InBoundGetBankAccountLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](callContext))        
   }
           
   messageDocs += getBankAccountDoc
@@ -826,14 +878,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccount(bankId: BankId, accountId: AccountId, callContext: Option[CallContext]): OBPReturnType[Box[BankAccount]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccount => InBound, OutBoundGetBankAccount => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccount => OutBound, InBoundGetBankAccount => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](callContext))        
   }
           
   messageDocs += getBankAccountByIbanDoc
@@ -873,14 +921,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountByIban(iban: String, callContext: Option[CallContext]): OBPReturnType[Box[BankAccount]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountByIban => InBound, OutBoundGetBankAccountByIban => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , iban)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountByIban => OutBound, InBoundGetBankAccountByIban => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, iban)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](callContext))        
   }
           
   messageDocs += getBankAccountByRoutingDoc
@@ -921,14 +965,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountByRouting(scheme: String, address: String, callContext: Option[CallContext]): Box[(BankAccount, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountByRouting => InBound, OutBoundGetBankAccountByRouting => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , scheme, address)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountByRouting => OutBound, InBoundGetBankAccountByRouting => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, scheme, address)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](callContext))        
   }
           
   messageDocs += getBankAccountsDoc
@@ -969,14 +1009,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccounts(bankIdAccountIds: List[BankIdAccountId], callContext: Option[CallContext]): OBPReturnType[Box[List[BankAccount]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccounts => InBound, OutBoundGetBankAccounts => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankIdAccountIds)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[BankAccountCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccounts => OutBound, InBoundGetBankAccounts => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankIdAccountIds)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[BankAccountCommons]](callContext))        
   }
           
   messageDocs += getBankAccountsBalancesDoc
@@ -1009,14 +1045,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountsBalances(bankIdAccountIds: List[BankIdAccountId], callContext: Option[CallContext]): OBPReturnType[Box[AccountsBalances]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountsBalances => InBound, OutBoundGetBankAccountsBalances => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankIdAccountIds)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AccountsBalances](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountsBalances => OutBound, InBoundGetBankAccountsBalances => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankIdAccountIds)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AccountsBalances](callContext))        
   }
           
   messageDocs += getCoreBankAccountsLegacyDoc
@@ -1045,14 +1077,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCoreBankAccountsLegacy(bankIdAccountIds: List[BankIdAccountId], callContext: Option[CallContext]): Box[(List[CoreAccount], Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCoreBankAccountsLegacy => InBound, OutBoundGetCoreBankAccountsLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankIdAccountIds)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CoreAccount]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCoreBankAccountsLegacy => OutBound, InBoundGetCoreBankAccountsLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankIdAccountIds)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CoreAccount]](callContext))        
   }
           
   messageDocs += getCoreBankAccountsDoc
@@ -1081,14 +1109,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCoreBankAccounts(bankIdAccountIds: List[BankIdAccountId], callContext: Option[CallContext]): Future[Box[(List[CoreAccount], Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCoreBankAccounts => InBound, OutBoundGetCoreBankAccounts => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankIdAccountIds)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CoreAccount]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCoreBankAccounts => OutBound, InBoundGetCoreBankAccounts => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankIdAccountIds)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CoreAccount]](callContext))        
   }
           
   messageDocs += getBankAccountsHeldLegacyDoc
@@ -1116,14 +1140,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountsHeldLegacy(bankIdAccountIds: List[BankIdAccountId], callContext: Option[CallContext]): Box[List[AccountHeld]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountsHeldLegacy => InBound, OutBoundGetBankAccountsHeldLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankIdAccountIds)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[AccountHeld]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountsHeldLegacy => OutBound, InBoundGetBankAccountsHeldLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankIdAccountIds)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[AccountHeld]](callContext))        
   }
           
   messageDocs += getBankAccountsHeldDoc
@@ -1151,14 +1171,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBankAccountsHeld(bankIdAccountIds: List[BankIdAccountId], callContext: Option[CallContext]): OBPReturnType[Box[List[AccountHeld]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBankAccountsHeld => InBound, OutBoundGetBankAccountsHeld => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankIdAccountIds)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[AccountHeld]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBankAccountsHeld => OutBound, InBoundGetBankAccountsHeld => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankIdAccountIds)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[AccountHeld]](callContext))        
   }
           
   messageDocs += checkBankAccountExistsLegacyDoc
@@ -1199,62 +1215,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def checkBankAccountExistsLegacy(bankId: BankId, accountId: AccountId, callContext: Option[CallContext]): Box[(BankAccount, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCheckBankAccountExistsLegacy => InBound, OutBoundCheckBankAccountExistsLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
-  }
-          
-  messageDocs += checkBankAccountExistsDoc
-  def checkBankAccountExistsDoc = MessageDoc(
-    process = "obp.checkBankAccountExists",
-    messageFormat = messageFormat,
-    description = "Check Bank Account Exists",
-    outboundTopic = None,
-    inboundTopic = None,
-    exampleOutboundMessage = (
-     OutBoundCheckBankAccountExists(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
-      bankId=BankId(bankIdExample.value),
-      accountId=AccountId(accountIdExample.value))
-    ),
-    exampleInboundMessage = (
-     InBoundCheckBankAccountExists(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
-      status=MessageDocsSwaggerDefinitions.inboundStatus,
-      data= BankAccountCommons(accountId=AccountId(accountIdExample.value),
-      accountType=accountTypeExample.value,
-      balance=BigDecimal(balanceAmountExample.value),
-      currency=currencyExample.value,
-      name=bankAccountNameExample.value,
-      label=labelExample.value,
-      iban=Some(ibanExample.value),
-      number=bankAccountNumberExample.value,
-      bankId=BankId(bankIdExample.value),
-      lastUpdate=parseDate(bankAccountLastUpdateExample.value).getOrElse(sys.error("bankAccountLastUpdateExample.value is not validate date format.")),
-      branchId=branchIdExample.value,
-      accountRoutingScheme=accountRoutingSchemeExample.value,
-      accountRoutingAddress=accountRoutingAddressExample.value,
-      accountRoutings=List( AccountRouting(scheme=accountRoutingSchemeExample.value,
-      address=accountRoutingAddressExample.value)),
-      accountRules=List( AccountRule(scheme=accountRuleSchemeExample.value,
-      value=accountRuleValueExample.value)),
-      accountHolder=bankAccountAccountHolderExample.value))
-    ),
-    adapterImplementation = Some(AdapterImplementation("- Core", 1))
-  )
-
-  override def checkBankAccountExists(bankId: BankId, accountId: AccountId, callContext: Option[CallContext]): OBPReturnType[Box[BankAccount]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCheckBankAccountExists => InBound, OutBoundCheckBankAccountExists => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCheckBankAccountExistsLegacy => OutBound, InBoundCheckBankAccountExistsLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](callContext))        
   }
           
   messageDocs += getCounterpartyTraitDoc
@@ -1296,14 +1260,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCounterpartyTrait(bankId: BankId, accountId: AccountId, couterpartyId: String, callContext: Option[CallContext]): OBPReturnType[Box[CounterpartyTrait]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCounterpartyTrait => InBound, OutBoundGetCounterpartyTrait => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, couterpartyId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CounterpartyTraitCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCounterpartyTrait => OutBound, InBoundGetCounterpartyTrait => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, couterpartyId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CounterpartyTraitCommons](callContext))        
   }
           
   messageDocs += getCounterpartyByCounterpartyIdLegacyDoc
@@ -1343,14 +1303,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCounterpartyByCounterpartyIdLegacy(counterpartyId: CounterpartyId, callContext: Option[CallContext]): Box[(CounterpartyTrait, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCounterpartyByCounterpartyIdLegacy => InBound, OutBoundGetCounterpartyByCounterpartyIdLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , counterpartyId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CounterpartyTraitCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCounterpartyByCounterpartyIdLegacy => OutBound, InBoundGetCounterpartyByCounterpartyIdLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, counterpartyId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CounterpartyTraitCommons](callContext))        
   }
           
   messageDocs += getCounterpartyByCounterpartyIdDoc
@@ -1390,14 +1346,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCounterpartyByCounterpartyId(counterpartyId: CounterpartyId, callContext: Option[CallContext]): OBPReturnType[Box[CounterpartyTrait]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCounterpartyByCounterpartyId => InBound, OutBoundGetCounterpartyByCounterpartyId => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , counterpartyId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CounterpartyTraitCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCounterpartyByCounterpartyId => OutBound, InBoundGetCounterpartyByCounterpartyId => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, counterpartyId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CounterpartyTraitCommons](callContext))        
   }
           
   messageDocs += getCounterpartyByIbanDoc
@@ -1437,14 +1389,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCounterpartyByIban(iban: String, callContext: Option[CallContext]): OBPReturnType[Box[CounterpartyTrait]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCounterpartyByIban => InBound, OutBoundGetCounterpartyByIban => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , iban)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CounterpartyTraitCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCounterpartyByIban => OutBound, InBoundGetCounterpartyByIban => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, iban)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CounterpartyTraitCommons](callContext))        
   }
           
   messageDocs += getCounterpartiesLegacyDoc
@@ -1486,14 +1434,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCounterpartiesLegacy(thisBankId: BankId, thisAccountId: AccountId, viewId: ViewId, callContext: Option[CallContext]): Box[(List[CounterpartyTrait], Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCounterpartiesLegacy => InBound, OutBoundGetCounterpartiesLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , thisBankId, thisAccountId, viewId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CounterpartyTraitCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCounterpartiesLegacy => OutBound, InBoundGetCounterpartiesLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, thisBankId, thisAccountId, viewId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CounterpartyTraitCommons]](callContext))        
   }
           
   messageDocs += getCounterpartiesDoc
@@ -1535,14 +1479,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCounterparties(thisBankId: BankId, thisAccountId: AccountId, viewId: ViewId, callContext: Option[CallContext]): OBPReturnType[Box[List[CounterpartyTrait]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCounterparties => InBound, OutBoundGetCounterparties => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , thisBankId, thisAccountId, viewId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CounterpartyTraitCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCounterparties => OutBound, InBoundGetCounterparties => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, thisBankId, thisAccountId, viewId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CounterpartyTraitCommons]](callContext))        
   }
           
   messageDocs += getTransactionsLegacyDoc
@@ -1608,14 +1548,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTransactionsLegacy(bankId: BankId, accountID: AccountId, callContext: Option[CallContext], queryParams: List[OBPQueryParam]): Box[(List[Transaction], Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTransactionsLegacy => InBound, OutBoundGetTransactionsLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountID, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[TransactionCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionsLegacy => OutBound, InBoundGetTransactionsLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountID, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[TransactionCommons]](callContext))        
   }
           
   messageDocs += getTransactionsDoc
@@ -1681,14 +1617,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTransactions(bankId: BankId, accountID: AccountId, callContext: Option[CallContext], queryParams: List[OBPQueryParam]): OBPReturnType[Box[List[Transaction]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTransactions => InBound, OutBoundGetTransactions => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountID, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[TransactionCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTransactions => OutBound, InBoundGetTransactions => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountID, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[TransactionCommons]](callContext))        
   }
           
   messageDocs += getTransactionsCoreDoc
@@ -1752,14 +1684,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTransactionsCore(bankId: BankId, accountID: AccountId, queryParams: List[OBPQueryParam], callContext: Option[CallContext]): OBPReturnType[Box[List[TransactionCore]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTransactionsCore => InBound, OutBoundGetTransactionsCore => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountID, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[TransactionCore]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionsCore => OutBound, InBoundGetTransactionsCore => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountID, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[TransactionCore]](callContext))        
   }
           
   messageDocs += getTransactionLegacyDoc
@@ -1822,14 +1750,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTransactionLegacy(bankId: BankId, accountID: AccountId, transactionId: TransactionId, callContext: Option[CallContext]): Box[(Transaction, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTransactionLegacy => InBound, OutBoundGetTransactionLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountID, transactionId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionLegacy => OutBound, InBoundGetTransactionLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountID, transactionId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionCommons](callContext))        
   }
           
   messageDocs += getTransactionDoc
@@ -1892,14 +1816,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTransaction(bankId: BankId, accountID: AccountId, transactionId: TransactionId, callContext: Option[CallContext]): OBPReturnType[Box[Transaction]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTransaction => InBound, OutBoundGetTransaction => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountID, transactionId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTransaction => OutBound, InBoundGetTransaction => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountID, transactionId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionCommons](callContext))        
   }
           
   messageDocs += getPhysicalCardForBankDoc
@@ -1962,14 +1882,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getPhysicalCardForBank(bankId: BankId, cardId: String, callContext: Option[CallContext]): OBPReturnType[Box[PhysicalCardTrait]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetPhysicalCardForBank => InBound, OutBoundGetPhysicalCardForBank => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, cardId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[PhysicalCard](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetPhysicalCardForBank => OutBound, InBoundGetPhysicalCardForBank => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, cardId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[PhysicalCard](callContext))        
   }
           
   messageDocs += deletePhysicalCardForBankDoc
@@ -1993,14 +1909,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def deletePhysicalCardForBank(bankId: BankId, cardId: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundDeletePhysicalCardForBank => InBound, OutBoundDeletePhysicalCardForBank => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, cardId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundDeletePhysicalCardForBank => OutBound, InBoundDeletePhysicalCardForBank => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, cardId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += getPhysicalCardsForBankDoc
@@ -2080,14 +1992,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getPhysicalCardsForBank(bank: Bank, user: User, queryParams: List[OBPQueryParam], callContext: Option[CallContext]): OBPReturnType[Box[List[PhysicalCard]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetPhysicalCardsForBank => InBound, OutBoundGetPhysicalCardsForBank => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bank, user, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[PhysicalCard]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetPhysicalCardsForBank => OutBound, InBoundGetPhysicalCardsForBank => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bank, user, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[PhysicalCard]](callContext))        
   }
           
   messageDocs += createPhysicalCardLegacyDoc
@@ -2170,14 +2078,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createPhysicalCardLegacy(bankCardNumber: String, nameOnCard: String, cardType: String, issueNumber: String, serialNumber: String, validFrom: Date, expires: Date, enabled: Boolean, cancelled: Boolean, onHotList: Boolean, technology: String, networks: List[String], allows: List[String], accountId: String, bankId: String, replacement: Option[CardReplacementInfo], pinResets: List[PinResetInfo], collected: Option[CardCollectionInfo], posted: Option[CardPostedInfo], customerId: String, callContext: Option[CallContext]): Box[PhysicalCard] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreatePhysicalCardLegacy => InBound, OutBoundCreatePhysicalCardLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankCardNumber, nameOnCard, cardType, issueNumber, serialNumber, validFrom, expires, enabled, cancelled, onHotList, technology, networks, allows, accountId, bankId, replacement, pinResets, collected, posted, customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[PhysicalCard](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreatePhysicalCardLegacy => OutBound, InBoundCreatePhysicalCardLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankCardNumber, nameOnCard, cardType, issueNumber, serialNumber, validFrom, expires, enabled, cancelled, onHotList, technology, networks, allows, accountId, bankId, replacement, pinResets, collected, posted, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[PhysicalCard](callContext))        
   }
           
   messageDocs += createPhysicalCardDoc
@@ -2260,14 +2164,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createPhysicalCard(bankCardNumber: String, nameOnCard: String, cardType: String, issueNumber: String, serialNumber: String, validFrom: Date, expires: Date, enabled: Boolean, cancelled: Boolean, onHotList: Boolean, technology: String, networks: List[String], allows: List[String], accountId: String, bankId: String, replacement: Option[CardReplacementInfo], pinResets: List[PinResetInfo], collected: Option[CardCollectionInfo], posted: Option[CardPostedInfo], customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[PhysicalCard]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreatePhysicalCard => InBound, OutBoundCreatePhysicalCard => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankCardNumber, nameOnCard, cardType, issueNumber, serialNumber, validFrom, expires, enabled, cancelled, onHotList, technology, networks, allows, accountId, bankId, replacement, pinResets, collected, posted, customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[PhysicalCard](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreatePhysicalCard => OutBound, InBoundCreatePhysicalCard => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankCardNumber, nameOnCard, cardType, issueNumber, serialNumber, validFrom, expires, enabled, cancelled, onHotList, technology, networks, allows, accountId, bankId, replacement, pinResets, collected, posted, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[PhysicalCard](callContext))        
   }
           
   messageDocs += updatePhysicalCardDoc
@@ -2351,14 +2251,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def updatePhysicalCard(cardId: String, bankCardNumber: String, nameOnCard: String, cardType: String, issueNumber: String, serialNumber: String, validFrom: Date, expires: Date, enabled: Boolean, cancelled: Boolean, onHotList: Boolean, technology: String, networks: List[String], allows: List[String], accountId: String, bankId: String, replacement: Option[CardReplacementInfo], pinResets: List[PinResetInfo], collected: Option[CardCollectionInfo], posted: Option[CardPostedInfo], customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[PhysicalCardTrait]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundUpdatePhysicalCard => InBound, OutBoundUpdatePhysicalCard => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , cardId, bankCardNumber, nameOnCard, cardType, issueNumber, serialNumber, validFrom, expires, enabled, cancelled, onHotList, technology, networks, allows, accountId, bankId, replacement, pinResets, collected, posted, customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[PhysicalCard](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundUpdatePhysicalCard => OutBound, InBoundUpdatePhysicalCard => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, cardId, bankCardNumber, nameOnCard, cardType, issueNumber, serialNumber, validFrom, expires, enabled, cancelled, onHotList, technology, networks, allows, accountId, bankId, replacement, pinResets, collected, posted, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[PhysicalCard](callContext))        
   }
           
   messageDocs += makePaymentv210Doc
@@ -2423,14 +2319,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def makePaymentv210(fromAccount: BankAccount, toAccount: BankAccount, transactionRequestCommonBody: TransactionRequestCommonBodyJSON, amount: BigDecimal, description: String, transactionRequestType: TransactionRequestType, chargePolicy: String, callContext: Option[CallContext]): OBPReturnType[Box[TransactionId]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundMakePaymentv210 => InBound, OutBoundMakePaymentv210 => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , fromAccount, toAccount, transactionRequestCommonBody, amount, description, transactionRequestType, chargePolicy)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionId](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundMakePaymentv210 => OutBound, InBoundMakePaymentv210 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, fromAccount, toAccount, transactionRequestCommonBody, amount, description, transactionRequestType, chargePolicy)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionId](callContext))        
   }
           
   messageDocs += createTransactionRequestv210Doc
@@ -2567,15 +2459,152 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
     adapterImplementation = Some(AdapterImplementation("- Core", 1))
   )
 
-  override def createTransactionRequestv210(initiator: User, viewId: ViewId, fromAccount: BankAccount, toAccount: BankAccount, transactionRequestType: TransactionRequestType, transactionRequestCommonBody: TransactionRequestCommonBodyJSON, detailsPlain: String, chargePolicy: String, challengeType: Option[String], scaMethod: Option[SCA], callContext: Option[CallContext]): OBPReturnType[Box[TransactionRequest]] = {
-    
+  override def createTransactionRequestv210(initiator: User, viewId: ViewId, fromAccount: BankAccount, toAccount: BankAccount, transactionRequestType: TransactionRequestType, transactionRequestCommonBody: TransactionRequestCommonBodyJSON, detailsPlain: String, chargePolicy: String, challengeType: Option[String], scaMethod: Option[StrongCustomerAuthentication.SCA], callContext: Option[CallContext]): OBPReturnType[Box[TransactionRequest]] = {
+        import com.openbankproject.commons.dto.{OutBoundCreateTransactionRequestv210 => OutBound, InBoundCreateTransactionRequestv210 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, initiator, viewId, fromAccount, toAccount, transactionRequestType, transactionRequestCommonBody, detailsPlain, chargePolicy, challengeType, scaMethod)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionRequest](callContext))        
+  }
+          
+  messageDocs += createTransactionRequestv400Doc
+  def createTransactionRequestv400Doc = MessageDoc(
+    process = "obp.createTransactionRequestv400",
+    messageFormat = messageFormat,
+    description = "Create Transaction Requestv400",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundCreateTransactionRequestv400(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      initiator= UserCommons(userPrimaryKey=UserPrimaryKey(123),
+      userId=userIdExample.value,
+      idGivenByProvider="string",
+      provider="string",
+      emailAddress=emailExample.value,
+      name=usernameExample.value),
+      viewId=ViewId(viewIdExample.value),
+      fromAccount= BankAccountCommons(accountId=AccountId(accountIdExample.value),
+      accountType=accountTypeExample.value,
+      balance=BigDecimal(balanceAmountExample.value),
+      currency=currencyExample.value,
+      name=bankAccountNameExample.value,
+      label=labelExample.value,
+      iban=Some(ibanExample.value),
+      number=bankAccountNumberExample.value,
+      bankId=BankId(bankIdExample.value),
+      lastUpdate=parseDate(bankAccountLastUpdateExample.value).getOrElse(sys.error("bankAccountLastUpdateExample.value is not validate date format.")),
+      branchId=branchIdExample.value,
+      accountRoutingScheme=accountRoutingSchemeExample.value,
+      accountRoutingAddress=accountRoutingAddressExample.value,
+      accountRoutings=List( AccountRouting(scheme=accountRoutingSchemeExample.value,
+      address=accountRoutingAddressExample.value)),
+      accountRules=List( AccountRule(scheme=accountRuleSchemeExample.value,
+      value=accountRuleValueExample.value)),
+      accountHolder=bankAccountAccountHolderExample.value),
+      toAccount= BankAccountCommons(accountId=AccountId(accountIdExample.value),
+      accountType=accountTypeExample.value,
+      balance=BigDecimal(balanceAmountExample.value),
+      currency=currencyExample.value,
+      name=bankAccountNameExample.value,
+      label=labelExample.value,
+      iban=Some(ibanExample.value),
+      number=bankAccountNumberExample.value,
+      bankId=BankId(bankIdExample.value),
+      lastUpdate=parseDate(bankAccountLastUpdateExample.value).getOrElse(sys.error("bankAccountLastUpdateExample.value is not validate date format.")),
+      branchId=branchIdExample.value,
+      accountRoutingScheme=accountRoutingSchemeExample.value,
+      accountRoutingAddress=accountRoutingAddressExample.value,
+      accountRoutings=List( AccountRouting(scheme=accountRoutingSchemeExample.value,
+      address=accountRoutingAddressExample.value)),
+      accountRules=List( AccountRule(scheme=accountRuleSchemeExample.value,
+      value=accountRuleValueExample.value)),
+      accountHolder=bankAccountAccountHolderExample.value),
+      transactionRequestType=TransactionRequestType(transactionRequestTypeExample.value),
+      transactionRequestCommonBody= TransactionRequestCommonBodyJSONCommons(value= AmountOfMoneyJsonV121(currency=currencyExample.value,
+      amount="string"),
+      description="string"),
+      detailsPlain="string",
+      chargePolicy="string",
+      challengeType=Some("string"),
+      scaMethod=Some(com.openbankproject.commons.model.enums.StrongCustomerAuthentication.SMS))
+    ),
+    exampleInboundMessage = (
+     InBoundCreateTransactionRequestv400(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= TransactionRequest(id=TransactionRequestId("string"),
+      `type`=transactionRequestTypeExample.value,
+      from= TransactionRequestAccount(bank_id="string",
+      account_id="string"),
+      body= TransactionRequestBodyAllTypes(to_sandbox_tan=Some( TransactionRequestAccount(bank_id="string",
+      account_id="string")),
+      to_sepa=Some(TransactionRequestIban("string")),
+      to_counterparty=Some(TransactionRequestCounterpartyId("string")),
+      to_transfer_to_phone=Some( TransactionRequestTransferToPhone(value= AmountOfMoneyJsonV121(currency=currencyExample.value,
+      amount="string"),
+      description="string",
+      message="string",
+      from= FromAccountTransfer(mobile_phone_number="string",
+      nickname="string"),
+      to=ToAccountTransferToPhone("string"))),
+      to_transfer_to_atm=Some( TransactionRequestTransferToAtm(value= AmountOfMoneyJsonV121(currency=currencyExample.value,
+      amount="string"),
+      description="string",
+      message="string",
+      from= FromAccountTransfer(mobile_phone_number="string",
+      nickname="string"),
+      to= ToAccountTransferToAtm(legal_name="string",
+      date_of_birth="string",
+      mobile_phone_number="string",
+      kyc_document= ToAccountTransferToAtmKycDocument(`type`="string",
+      number="string")))),
+      to_transfer_to_account=Some( TransactionRequestTransferToAccount(value= AmountOfMoneyJsonV121(currency=currencyExample.value,
+      amount="string"),
+      description="string",
+      transfer_type="string",
+      future_date="string",
+      to= ToAccountTransferToAccount(name="string",
+      bank_code="string",
+      branch_number="string",
+      account= ToAccountTransferToAccountAccount(number=accountNumberExample.value,
+      iban=ibanExample.value)))),
+      to_sepa_credit_transfers=Some( SepaCreditTransfers(debtorAccount=PaymentAccount("string"),
+      instructedAmount= AmountOfMoneyJsonV121(currency=currencyExample.value,
+      amount="string"),
+      creditorAccount=PaymentAccount("string"),
+      creditorName="string")),
+      value= AmountOfMoney(currency=currencyExample.value,
+      amount="string"),
+      description="string"),
+      transaction_ids="string",
+      status="string",
+      start_date=new Date(),
+      end_date=new Date(),
+      challenge= TransactionRequestChallenge(id="string",
+      allowed_attempts=123,
+      challenge_type="string"),
+      charge= TransactionRequestCharge(summary="string",
+      value= AmountOfMoney(currency=currencyExample.value,
+      amount="string")),
+      charge_policy="string",
+      counterparty_id=CounterpartyId(counterpartyIdExample.value),
+      name="string",
+      this_bank_id=BankId(bankIdExample.value),
+      this_account_id=AccountId(accountIdExample.value),
+      this_view_id=ViewId(viewIdExample.value),
+      other_account_routing_scheme="string",
+      other_account_routing_address="string",
+      other_bank_routing_scheme="string",
+      other_bank_routing_address="string",
+      is_beneficiary=true,
+      future_date=Some("string")))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundCreateTransactionRequestv210 => InBound, OutBoundCreateTransactionRequestv210 => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , initiator, viewId, fromAccount, toAccount, transactionRequestType, transactionRequestCommonBody, detailsPlain, chargePolicy, challengeType, scaMethod)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionRequest](callContext))
-
-
+  override def createTransactionRequestv400(initiator: User, viewId: ViewId, fromAccount: BankAccount, toAccount: BankAccount, transactionRequestType: TransactionRequestType, transactionRequestCommonBody: TransactionRequestCommonBodyJSON, detailsPlain: String, chargePolicy: String, challengeType: Option[String], scaMethod: Option[StrongCustomerAuthentication.SCA], callContext: Option[CallContext]): OBPReturnType[Box[TransactionRequest]] = {
+        import com.openbankproject.commons.dto.{OutBoundCreateTransactionRequestv400 => OutBound, InBoundCreateTransactionRequestv400 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, initiator, viewId, fromAccount, toAccount, transactionRequestType, transactionRequestCommonBody, detailsPlain, chargePolicy, challengeType, scaMethod)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionRequest](callContext))        
   }
           
   messageDocs += getTransactionRequests210Doc
@@ -2686,14 +2715,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTransactionRequests210(initiator: User, fromAccount: BankAccount, callContext: Option[CallContext]): Box[(List[TransactionRequest], Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTransactionRequests210 => InBound, OutBoundGetTransactionRequests210 => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , initiator, fromAccount)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[TransactionRequest]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionRequests210 => OutBound, InBoundGetTransactionRequests210 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, initiator, fromAccount)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[TransactionRequest]](callContext))        
   }
           
   messageDocs += getTransactionRequestImplDoc
@@ -2781,14 +2806,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTransactionRequestImpl(transactionRequestId: TransactionRequestId, callContext: Option[CallContext]): Box[(TransactionRequest, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTransactionRequestImpl => InBound, OutBoundGetTransactionRequestImpl => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , transactionRequestId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionRequest](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionRequestImpl => OutBound, InBoundGetTransactionRequestImpl => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, transactionRequestId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionRequest](callContext))        
   }
           
   messageDocs += createTransactionAfterChallengeV210Doc
@@ -2959,14 +2980,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createTransactionAfterChallengeV210(fromAccount: BankAccount, transactionRequest: TransactionRequest, callContext: Option[CallContext]): OBPReturnType[Box[TransactionRequest]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateTransactionAfterChallengeV210 => InBound, OutBoundCreateTransactionAfterChallengeV210 => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , fromAccount, transactionRequest)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionRequest](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateTransactionAfterChallengeV210 => OutBound, InBoundCreateTransactionAfterChallengeV210 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, fromAccount, transactionRequest)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionRequest](callContext))        
   }
           
   messageDocs += updateBankAccountDoc
@@ -3012,14 +3029,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def updateBankAccount(bankId: BankId, accountId: AccountId, accountType: String, accountLabel: String, branchId: String, accountRoutingScheme: String, accountRoutingAddress: String, callContext: Option[CallContext]): OBPReturnType[Box[BankAccount]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundUpdateBankAccount => InBound, OutBoundUpdateBankAccount => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, accountType, accountLabel, branchId, accountRoutingScheme, accountRoutingAddress)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundUpdateBankAccount => OutBound, InBoundUpdateBankAccount => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, accountType, accountLabel, branchId, accountRoutingScheme, accountRoutingAddress)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](callContext))        
   }
           
   messageDocs += createBankAccountDoc
@@ -3068,14 +3081,35 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createBankAccount(bankId: BankId, accountId: AccountId, accountType: String, accountLabel: String, currency: String, initialBalance: BigDecimal, accountHolderName: String, branchId: String, accountRoutingScheme: String, accountRoutingAddress: String, callContext: Option[CallContext]): OBPReturnType[Box[BankAccount]] = {
-    
+        import com.openbankproject.commons.dto.{OutBoundCreateBankAccount => OutBound, InBoundCreateBankAccount => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, accountType, accountLabel, currency, initialBalance, accountHolderName, branchId, accountRoutingScheme, accountRoutingAddress)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BankAccountCommons](callContext))        
+  }
+          
+  messageDocs += accountExistsDoc
+  def accountExistsDoc = MessageDoc(
+    process = "obp.accountExists",
+    messageFormat = messageFormat,
+    description = "Account Exists",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundAccountExists(bankId=BankId(bankIdExample.value),
+      accountNumber=accountNumberExample.value)
+    ),
+    exampleInboundMessage = (
+     InBoundAccountExists(status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=true)
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundCreateBankAccount => InBound, OutBoundCreateBankAccount => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, accountType, accountLabel, currency, initialBalance, accountHolderName, branchId, accountRoutingScheme, accountRoutingAddress)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BankAccountCommons](callContext))
-
-
+  override def accountExists(bankId: BankId, accountNumber: String): Box[Boolean] = {
+        import com.openbankproject.commons.dto.{OutBoundAccountExists => OutBound, InBoundAccountExists => InBound}
+        val req = OutBound(bankId, accountNumber)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](None))        
   }
           
   messageDocs += getBranchDoc
@@ -3155,14 +3189,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBranch(bankId: BankId, branchId: BranchId, callContext: Option[CallContext]): Future[Box[(BranchT, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBranch => InBound, OutBoundGetBranch => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, branchId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[BranchTCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBranch => OutBound, InBoundGetBranch => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, branchId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[BranchTCommons](callContext))        
   }
           
   messageDocs += getBranchesDoc
@@ -3245,14 +3275,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getBranches(bankId: BankId, callContext: Option[CallContext], queryParams: List[OBPQueryParam]): Future[Box[(List[BranchT], Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetBranches => InBound, OutBoundGetBranches => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[BranchTCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetBranches => OutBound, InBoundGetBranches => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[BranchTCommons]](callContext))        
   }
           
   messageDocs += getAtmDoc
@@ -3312,14 +3338,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getAtm(bankId: BankId, atmId: AtmId, callContext: Option[CallContext]): Future[Box[(AtmT, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetAtm => InBound, OutBoundGetAtm => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, atmId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AtmTCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetAtm => OutBound, InBoundGetAtm => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, atmId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AtmTCommons](callContext))        
   }
           
   messageDocs += getAtmsDoc
@@ -3382,14 +3404,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getAtms(bankId: BankId, callContext: Option[CallContext], queryParams: List[OBPQueryParam]): Future[Box[(List[AtmT], Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetAtms => InBound, OutBoundGetAtms => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[AtmTCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetAtms => OutBound, InBoundGetAtms => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[AtmTCommons]](callContext))        
   }
           
   messageDocs += createTransactionAfterChallengev300Doc
@@ -3502,14 +3520,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createTransactionAfterChallengev300(initiator: User, fromAccount: BankAccount, transReqId: TransactionRequestId, transactionRequestType: TransactionRequestType, callContext: Option[CallContext]): OBPReturnType[Box[TransactionRequest]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateTransactionAfterChallengev300 => InBound, OutBoundCreateTransactionAfterChallengev300 => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , initiator, fromAccount, transReqId, transactionRequestType)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionRequest](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateTransactionAfterChallengev300 => OutBound, InBoundCreateTransactionAfterChallengev300 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, initiator, fromAccount, transReqId, transactionRequestType)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionRequest](callContext))        
   }
           
   messageDocs += makePaymentv300Doc
@@ -3596,14 +3610,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def makePaymentv300(initiator: User, fromAccount: BankAccount, toAccount: BankAccount, toCounterparty: CounterpartyTrait, transactionRequestCommonBody: TransactionRequestCommonBodyJSON, transactionRequestType: TransactionRequestType, chargePolicy: String, callContext: Option[CallContext]): Future[Box[(TransactionId, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundMakePaymentv300 => InBound, OutBoundMakePaymentv300 => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , initiator, fromAccount, toAccount, toCounterparty, transactionRequestCommonBody, transactionRequestType, chargePolicy)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionId](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundMakePaymentv300 => OutBound, InBoundMakePaymentv300 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, initiator, fromAccount, toAccount, toCounterparty, transactionRequestCommonBody, transactionRequestType, chargePolicy)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionId](callContext))        
   }
           
   messageDocs += createTransactionRequestv300Doc
@@ -3757,14 +3767,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createTransactionRequestv300(initiator: User, viewId: ViewId, fromAccount: BankAccount, toAccount: BankAccount, toCounterparty: CounterpartyTrait, transactionRequestType: TransactionRequestType, transactionRequestCommonBody: TransactionRequestCommonBodyJSON, detailsPlain: String, chargePolicy: String, callContext: Option[CallContext]): Future[Box[(TransactionRequest, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateTransactionRequestv300 => InBound, OutBoundCreateTransactionRequestv300 => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , initiator, viewId, fromAccount, toAccount, toCounterparty, transactionRequestType, transactionRequestCommonBody, detailsPlain, chargePolicy)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionRequest](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateTransactionRequestv300 => OutBound, InBoundCreateTransactionRequestv300 => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, initiator, viewId, fromAccount, toAccount, toCounterparty, transactionRequestType, transactionRequestCommonBody, detailsPlain, chargePolicy)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionRequest](callContext))        
   }
           
   messageDocs += createCounterpartyDoc
@@ -3820,14 +3826,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createCounterparty(name: String, description: String, createdByUserId: String, thisBankId: String, thisAccountId: String, thisViewId: String, otherAccountRoutingScheme: String, otherAccountRoutingAddress: String, otherAccountSecondaryRoutingScheme: String, otherAccountSecondaryRoutingAddress: String, otherBankRoutingScheme: String, otherBankRoutingAddress: String, otherBranchRoutingScheme: String, otherBranchRoutingAddress: String, isBeneficiary: Boolean, bespoke: List[CounterpartyBespoke], callContext: Option[CallContext]): Box[(CounterpartyTrait, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateCounterparty => InBound, OutBoundCreateCounterparty => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , name, description, createdByUserId, thisBankId, thisAccountId, thisViewId, otherAccountRoutingScheme, otherAccountRoutingAddress, otherAccountSecondaryRoutingScheme, otherAccountSecondaryRoutingAddress, otherBankRoutingScheme, otherBankRoutingAddress, otherBranchRoutingScheme, otherBranchRoutingAddress, isBeneficiary, bespoke)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CounterpartyTraitCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateCounterparty => OutBound, InBoundCreateCounterparty => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, name, description, createdByUserId, thisBankId, thisAccountId, thisViewId, otherAccountRoutingScheme, otherAccountRoutingAddress, otherAccountSecondaryRoutingScheme, otherAccountSecondaryRoutingAddress, otherBankRoutingScheme, otherBankRoutingAddress, otherBranchRoutingScheme, otherBranchRoutingAddress, isBeneficiary, bespoke)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CounterpartyTraitCommons](callContext))        
   }
           
   messageDocs += checkCustomerNumberAvailableDoc
@@ -3851,14 +3853,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def checkCustomerNumberAvailable(bankId: BankId, customerNumber: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCheckCustomerNumberAvailable => InBound, OutBoundCheckCustomerNumberAvailable => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, customerNumber)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCheckCustomerNumberAvailable => OutBound, InBoundCheckCustomerNumberAvailable => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, customerNumber)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += createCustomerDoc
@@ -3923,14 +3921,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createCustomer(bankId: BankId, legalName: String, mobileNumber: String, email: String, faceImage: CustomerFaceImageTrait, dateOfBirth: Date, relationshipStatus: String, dependents: Int, dobOfDependents: List[Date], highestEducationAttained: String, employmentStatus: String, kycStatus: Boolean, lastOkDate: Date, creditRating: Option[CreditRatingTrait], creditLimit: Option[AmountOfMoneyTrait], title: String, branchId: String, nameSuffix: String, callContext: Option[CallContext]): OBPReturnType[Box[Customer]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateCustomer => InBound, OutBoundCreateCustomer => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, legalName, mobileNumber, email, faceImage, dateOfBirth, relationshipStatus, dependents, dobOfDependents, highestEducationAttained, employmentStatus, kycStatus, lastOkDate, creditRating, creditLimit, title, branchId, nameSuffix)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateCustomer => OutBound, InBoundCreateCustomer => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, legalName, mobileNumber, email, faceImage, dateOfBirth, relationshipStatus, dependents, dobOfDependents, highestEducationAttained, employmentStatus, kycStatus, lastOkDate, creditRating, creditLimit, title, branchId, nameSuffix)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerCommons](callContext))        
   }
           
   messageDocs += updateCustomerScaDataDoc
@@ -3978,14 +3972,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def updateCustomerScaData(customerId: String, mobileNumber: Option[String], email: Option[String], customerNumber: Option[String], callContext: Option[CallContext]): OBPReturnType[Box[Customer]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundUpdateCustomerScaData => InBound, OutBoundUpdateCustomerScaData => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId, mobileNumber, email, customerNumber)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundUpdateCustomerScaData => OutBound, InBoundUpdateCustomerScaData => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId, mobileNumber, email, customerNumber)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerCommons](callContext))        
   }
           
   messageDocs += updateCustomerCreditDataDoc
@@ -4034,14 +4024,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def updateCustomerCreditData(customerId: String, creditRating: Option[String], creditSource: Option[String], creditLimit: Option[AmountOfMoney], callContext: Option[CallContext]): OBPReturnType[Box[Customer]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundUpdateCustomerCreditData => InBound, OutBoundUpdateCustomerCreditData => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId, creditRating, creditSource, creditLimit)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundUpdateCustomerCreditData => OutBound, InBoundUpdateCustomerCreditData => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId, creditRating, creditSource, creditLimit)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerCommons](callContext))        
   }
           
   messageDocs += updateCustomerGeneralDataDoc
@@ -4097,14 +4083,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def updateCustomerGeneralData(customerId: String, legalName: Option[String], faceImage: Option[CustomerFaceImageTrait], dateOfBirth: Option[Date], relationshipStatus: Option[String], dependents: Option[Int], highestEducationAttained: Option[String], employmentStatus: Option[String], title: Option[String], branchId: Option[String], nameSuffix: Option[String], callContext: Option[CallContext]): OBPReturnType[Box[Customer]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundUpdateCustomerGeneralData => InBound, OutBoundUpdateCustomerGeneralData => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId, legalName, faceImage, dateOfBirth, relationshipStatus, dependents, highestEducationAttained, employmentStatus, title, branchId, nameSuffix)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundUpdateCustomerGeneralData => OutBound, InBoundUpdateCustomerGeneralData => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId, legalName, faceImage, dateOfBirth, relationshipStatus, dependents, highestEducationAttained, employmentStatus, title, branchId, nameSuffix)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerCommons](callContext))        
   }
           
   messageDocs += getCustomersByUserIdDoc
@@ -4149,14 +4131,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCustomersByUserId(userId: String, callContext: Option[CallContext]): Future[Box[(List[Customer], Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCustomersByUserId => InBound, OutBoundGetCustomersByUserId => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , userId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CustomerCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCustomersByUserId => OutBound, InBoundGetCustomersByUserId => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, userId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CustomerCommons]](callContext))        
   }
           
   messageDocs += getCustomerByCustomerIdLegacyDoc
@@ -4201,14 +4179,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCustomerByCustomerIdLegacy(customerId: String, callContext: Option[CallContext]): Box[(Customer, Option[CallContext])] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCustomerByCustomerIdLegacy => InBound, OutBoundGetCustomerByCustomerIdLegacy => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerByCustomerIdLegacy => OutBound, InBoundGetCustomerByCustomerIdLegacy => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerCommons](callContext))        
   }
           
   messageDocs += getCustomerByCustomerIdDoc
@@ -4253,14 +4227,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCustomerByCustomerId(customerId: String, callContext: Option[CallContext]): Future[Box[(Customer, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCustomerByCustomerId => InBound, OutBoundGetCustomerByCustomerId => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerByCustomerId => OutBound, InBoundGetCustomerByCustomerId => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerCommons](callContext))        
   }
           
   messageDocs += getCustomerByCustomerNumberDoc
@@ -4306,14 +4276,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCustomerByCustomerNumber(customerNumber: String, bankId: BankId, callContext: Option[CallContext]): Future[Box[(Customer, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCustomerByCustomerNumber => InBound, OutBoundGetCustomerByCustomerNumber => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerNumber, bankId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerByCustomerNumber => OutBound, InBoundGetCustomerByCustomerNumber => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerNumber, bankId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerCommons](callContext))        
   }
           
   messageDocs += getCustomerAddressDoc
@@ -4348,14 +4314,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCustomerAddress(customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[CustomerAddress]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCustomerAddress => InBound, OutBoundGetCustomerAddress => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CustomerAddressCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerAddress => OutBound, InBoundGetCustomerAddress => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CustomerAddressCommons]](callContext))        
   }
           
   messageDocs += createCustomerAddressDoc
@@ -4400,14 +4362,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createCustomerAddress(customerId: String, line1: String, line2: String, line3: String, city: String, county: String, state: String, postcode: String, countryCode: String, tags: String, status: String, callContext: Option[CallContext]): OBPReturnType[Box[CustomerAddress]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateCustomerAddress => InBound, OutBoundCreateCustomerAddress => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId, line1, line2, line3, city, county, state, postcode, countryCode, tags, status)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerAddressCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateCustomerAddress => OutBound, InBoundCreateCustomerAddress => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId, line1, line2, line3, city, county, state, postcode, countryCode, tags, status)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerAddressCommons](callContext))        
   }
           
   messageDocs += updateCustomerAddressDoc
@@ -4452,14 +4410,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def updateCustomerAddress(customerAddressId: String, line1: String, line2: String, line3: String, city: String, county: String, state: String, postcode: String, countryCode: String, tags: String, status: String, callContext: Option[CallContext]): OBPReturnType[Box[CustomerAddress]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundUpdateCustomerAddress => InBound, OutBoundUpdateCustomerAddress => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerAddressId, line1, line2, line3, city, county, state, postcode, countryCode, tags, status)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerAddressCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundUpdateCustomerAddress => OutBound, InBoundUpdateCustomerAddress => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerAddressId, line1, line2, line3, city, county, state, postcode, countryCode, tags, status)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerAddressCommons](callContext))        
   }
           
   messageDocs += deleteCustomerAddressDoc
@@ -4482,14 +4436,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def deleteCustomerAddress(customerAddressId: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundDeleteCustomerAddress => InBound, OutBoundDeleteCustomerAddress => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerAddressId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundDeleteCustomerAddress => OutBound, InBoundDeleteCustomerAddress => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerAddressId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += createTaxResidenceDoc
@@ -4517,14 +4467,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createTaxResidence(customerId: String, domain: String, taxNumber: String, callContext: Option[CallContext]): OBPReturnType[Box[TaxResidence]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateTaxResidence => InBound, OutBoundCreateTaxResidence => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId, domain, taxNumber)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TaxResidenceCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateTaxResidence => OutBound, InBoundCreateTaxResidence => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId, domain, taxNumber)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TaxResidenceCommons](callContext))        
   }
           
   messageDocs += getTaxResidenceDoc
@@ -4550,14 +4496,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getTaxResidence(customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[TaxResidence]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetTaxResidence => InBound, OutBoundGetTaxResidence => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[TaxResidenceCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetTaxResidence => OutBound, InBoundGetTaxResidence => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[TaxResidenceCommons]](callContext))        
   }
           
   messageDocs += deleteTaxResidenceDoc
@@ -4580,14 +4522,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def deleteTaxResidence(taxResourceId: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundDeleteTaxResidence => InBound, OutBoundDeleteTaxResidence => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , taxResourceId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundDeleteTaxResidence => OutBound, InBoundDeleteTaxResidence => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, taxResourceId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += getCustomersDoc
@@ -4636,14 +4574,59 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCustomers(bankId: BankId, callContext: Option[CallContext], queryParams: List[OBPQueryParam]): Future[Box[List[Customer]]] = {
-    
+        import com.openbankproject.commons.dto.{OutBoundGetCustomers => OutBound, InBoundGetCustomers => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CustomerCommons]](callContext))        
+  }
+          
+  messageDocs += getCustomersByCustomerPhoneNumberDoc
+  def getCustomersByCustomerPhoneNumberDoc = MessageDoc(
+    process = "obp.getCustomersByCustomerPhoneNumber",
+    messageFormat = messageFormat,
+    description = "Get Customers By Customer Phone Number",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetCustomersByCustomerPhoneNumber(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      phoneNumber="string")
+    ),
+    exampleInboundMessage = (
+     InBoundGetCustomersByCustomerPhoneNumber(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=List( CustomerCommons(customerId=customerIdExample.value,
+      bankId=bankIdExample.value,
+      number=customerNumberExample.value,
+      legalName=legalNameExample.value,
+      mobileNumber=mobileNumberExample.value,
+      email=emailExample.value,
+      faceImage= CustomerFaceImage(date=parseDate(customerFaceImageDateExample.value).getOrElse(sys.error("customerFaceImageDateExample.value is not validate date format.")),
+      url=urlExample.value),
+      dateOfBirth=parseDate(dateOfBirthExample.value).getOrElse(sys.error("dateOfBirthExample.value is not validate date format.")),
+      relationshipStatus=relationshipStatusExample.value,
+      dependents=dependentsExample.value.toInt,
+      dobOfDependents=dobOfDependentsExample.value.split("[,;]").map(parseDate).flatMap(_.toSeq).toList,
+      highestEducationAttained=highestEducationAttainedExample.value,
+      employmentStatus=employmentStatusExample.value,
+      creditRating= CreditRating(rating=ratingExample.value,
+      source=sourceExample.value),
+      creditLimit= CreditLimit(currency=currencyExample.value,
+      amount=creditLimitAmountExample.value),
+      kycStatus=kycStatusExample.value.toBoolean,
+      lastOkDate=parseDate(customerLastOkDateExample.value).getOrElse(sys.error("customerLastOkDateExample.value is not validate date format.")),
+      title=customerTitleExample.value,
+      branchId=branchIdExample.value,
+      nameSuffix=nameSuffixExample.value)))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundGetCustomers => InBound, OutBoundGetCustomers => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, OBPQueryParam.getLimit(queryParams), OBPQueryParam.getOffset(queryParams), OBPQueryParam.getFromDate(queryParams), OBPQueryParam.getToDate(queryParams))
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CustomerCommons]](callContext))
-
-
+  override def getCustomersByCustomerPhoneNumber(bankId: BankId, phoneNumber: String, callContext: Option[CallContext]): OBPReturnType[Box[List[Customer]]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetCustomersByCustomerPhoneNumber => OutBound, InBoundGetCustomersByCustomerPhoneNumber => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, phoneNumber)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CustomerCommons]](callContext))        
   }
           
   messageDocs += getCheckbookOrdersDoc
@@ -4680,14 +4663,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCheckbookOrders(bankId: String, accountId: String, callContext: Option[CallContext]): Future[Box[(CheckbookOrdersJson, Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCheckbookOrders => InBound, OutBoundGetCheckbookOrders => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CheckbookOrdersJson](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCheckbookOrders => OutBound, InBoundGetCheckbookOrders => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CheckbookOrdersJson](callContext))        
   }
           
   messageDocs += getStatusOfCreditCardOrderDoc
@@ -4713,14 +4692,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getStatusOfCreditCardOrder(bankId: String, accountId: String, callContext: Option[CallContext]): Future[Box[(List[CardObjectJson], Option[CallContext])]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetStatusOfCreditCardOrder => InBound, OutBoundGetStatusOfCreditCardOrder => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CardObjectJson]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetStatusOfCreditCardOrder => OutBound, InBoundGetStatusOfCreditCardOrder => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CardObjectJson]](callContext))        
   }
           
   messageDocs += createUserAuthContextDoc
@@ -4748,14 +4723,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createUserAuthContext(userId: String, key: String, value: String, callContext: Option[CallContext]): OBPReturnType[Box[UserAuthContext]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateUserAuthContext => InBound, OutBoundCreateUserAuthContext => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , userId, key, value)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[UserAuthContextCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateUserAuthContext => OutBound, InBoundCreateUserAuthContext => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, userId, key, value)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[UserAuthContextCommons](callContext))        
   }
           
   messageDocs += createUserAuthContextUpdateDoc
@@ -4785,14 +4756,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createUserAuthContextUpdate(userId: String, key: String, value: String, callContext: Option[CallContext]): OBPReturnType[Box[UserAuthContextUpdate]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateUserAuthContextUpdate => InBound, OutBoundCreateUserAuthContextUpdate => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , userId, key, value)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[UserAuthContextUpdateCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateUserAuthContextUpdate => OutBound, InBoundCreateUserAuthContextUpdate => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, userId, key, value)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[UserAuthContextUpdateCommons](callContext))        
   }
           
   messageDocs += deleteUserAuthContextsDoc
@@ -4815,14 +4782,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def deleteUserAuthContexts(userId: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundDeleteUserAuthContexts => InBound, OutBoundDeleteUserAuthContexts => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , userId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundDeleteUserAuthContexts => OutBound, InBoundDeleteUserAuthContexts => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, userId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += deleteUserAuthContextByIdDoc
@@ -4845,14 +4808,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def deleteUserAuthContextById(userAuthContextId: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundDeleteUserAuthContextById => InBound, OutBoundDeleteUserAuthContextById => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , userAuthContextId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundDeleteUserAuthContextById => OutBound, InBoundDeleteUserAuthContextById => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, userAuthContextId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += getUserAuthContextsDoc
@@ -4878,14 +4837,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getUserAuthContexts(userId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[UserAuthContext]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetUserAuthContexts => InBound, OutBoundGetUserAuthContexts => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , userId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[UserAuthContextCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetUserAuthContexts => OutBound, InBoundGetUserAuthContexts => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, userId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[UserAuthContextCommons]](callContext))        
   }
           
   messageDocs += createOrUpdateProductAttributeDoc
@@ -4918,14 +4873,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createOrUpdateProductAttribute(bankId: BankId, productCode: ProductCode, productAttributeId: Option[String], name: String, productAttributeType: ProductAttributeType.Value, value: String, callContext: Option[CallContext]): OBPReturnType[Box[ProductAttribute]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateOrUpdateProductAttribute => InBound, OutBoundCreateOrUpdateProductAttribute => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, productCode, productAttributeId, name, productAttributeType, value)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[ProductAttributeCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateProductAttribute => OutBound, InBoundCreateOrUpdateProductAttribute => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, productCode, productAttributeId, name, productAttributeType, value)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[ProductAttributeCommons](callContext))        
   }
           
   messageDocs += getProductAttributeByIdDoc
@@ -4953,14 +4904,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getProductAttributeById(productAttributeId: String, callContext: Option[CallContext]): OBPReturnType[Box[ProductAttribute]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetProductAttributeById => InBound, OutBoundGetProductAttributeById => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , productAttributeId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[ProductAttributeCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetProductAttributeById => OutBound, InBoundGetProductAttributeById => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, productAttributeId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[ProductAttributeCommons](callContext))        
   }
           
   messageDocs += getProductAttributesByBankAndCodeDoc
@@ -4989,14 +4936,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getProductAttributesByBankAndCode(bank: BankId, productCode: ProductCode, callContext: Option[CallContext]): OBPReturnType[Box[List[ProductAttribute]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetProductAttributesByBankAndCode => InBound, OutBoundGetProductAttributesByBankAndCode => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bank, productCode)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[ProductAttributeCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetProductAttributesByBankAndCode => OutBound, InBoundGetProductAttributesByBankAndCode => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bank, productCode)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[ProductAttributeCommons]](callContext))        
   }
           
   messageDocs += deleteProductAttributeDoc
@@ -5019,14 +4962,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def deleteProductAttribute(productAttributeId: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundDeleteProductAttribute => InBound, OutBoundDeleteProductAttribute => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , productAttributeId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[Boolean](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundDeleteProductAttribute => OutBound, InBoundDeleteProductAttribute => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, productAttributeId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
   }
           
   messageDocs += getAccountAttributeByIdDoc
@@ -5055,14 +4994,41 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getAccountAttributeById(accountAttributeId: String, callContext: Option[CallContext]): OBPReturnType[Box[AccountAttribute]] = {
-    
+        import com.openbankproject.commons.dto.{OutBoundGetAccountAttributeById => OutBound, InBoundGetAccountAttributeById => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, accountAttributeId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AccountAttributeCommons](callContext))        
+  }
+          
+  messageDocs += getTransactionAttributeByIdDoc
+  def getTransactionAttributeByIdDoc = MessageDoc(
+    process = "obp.getTransactionAttributeById",
+    messageFormat = messageFormat,
+    description = "Get Transaction Attribute By Id",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetTransactionAttributeById(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      transactionAttributeId=transactionAttributeIdExample.value)
+    ),
+    exampleInboundMessage = (
+     InBoundGetTransactionAttributeById(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= TransactionAttributeCommons(bankId=BankId(bankIdExample.value),
+      transactionId=TransactionId(transactionIdExample.value),
+      transactionAttributeId=transactionAttributeIdExample.value,
+      attributeType=com.openbankproject.commons.model.enums.TransactionAttributeType.example,
+      name=transactionAttributeNameExample.value,
+      value=transactionAttributeValueExample.value))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundGetAccountAttributeById => InBound, OutBoundGetAccountAttributeById => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , accountAttributeId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AccountAttributeCommons](callContext))
-
-
+  override def getTransactionAttributeById(transactionAttributeId: String, callContext: Option[CallContext]): OBPReturnType[Box[TransactionAttribute]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionAttributeById => OutBound, InBoundGetTransactionAttributeById => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, transactionAttributeId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionAttributeCommons](callContext))        
   }
           
   messageDocs += createOrUpdateAccountAttributeDoc
@@ -5097,14 +5063,82 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createOrUpdateAccountAttribute(bankId: BankId, accountId: AccountId, productCode: ProductCode, productAttributeId: Option[String], name: String, accountAttributeType: AccountAttributeType.Value, value: String, callContext: Option[CallContext]): OBPReturnType[Box[AccountAttribute]] = {
-    
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateAccountAttribute => OutBound, InBoundCreateOrUpdateAccountAttribute => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, productCode, productAttributeId, name, accountAttributeType, value)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AccountAttributeCommons](callContext))        
+  }
+          
+  messageDocs += createOrUpdateCustomerAttributeDoc
+  def createOrUpdateCustomerAttributeDoc = MessageDoc(
+    process = "obp.createOrUpdateCustomerAttribute",
+    messageFormat = messageFormat,
+    description = "Create Or Update Customer Attribute",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundCreateOrUpdateCustomerAttribute(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      customerId=CustomerId(customerIdExample.value),
+      customerAttributeId=Some(customerAttributeIdExample.value),
+      name="string",
+      attributeType=com.openbankproject.commons.model.enums.CustomerAttributeType.example,
+      value=valueExample.value)
+    ),
+    exampleInboundMessage = (
+     InBoundCreateOrUpdateCustomerAttribute(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= CustomerAttributeCommons(bankId=BankId(bankIdExample.value),
+      customerId=CustomerId(customerIdExample.value),
+      customerAttributeId=customerAttributeIdExample.value,
+      attributeType=com.openbankproject.commons.model.enums.CustomerAttributeType.example,
+      name=customerAttributeNameExample.value,
+      value=customerAttributeValueExample.value))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundCreateOrUpdateAccountAttribute => InBound, OutBoundCreateOrUpdateAccountAttribute => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, productCode, productAttributeId, name, accountAttributeType, value)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AccountAttributeCommons](callContext))
+  override def createOrUpdateCustomerAttribute(bankId: BankId, customerId: CustomerId, customerAttributeId: Option[String], name: String, attributeType: CustomerAttributeType.Value, value: String, callContext: Option[CallContext]): OBPReturnType[Box[CustomerAttribute]] = {
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateCustomerAttribute => OutBound, InBoundCreateOrUpdateCustomerAttribute => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, customerId, customerAttributeId, name, attributeType, value)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerAttributeCommons](callContext))        
+  }
+          
+  messageDocs += createOrUpdateTransactionAttributeDoc
+  def createOrUpdateTransactionAttributeDoc = MessageDoc(
+    process = "obp.createOrUpdateTransactionAttribute",
+    messageFormat = messageFormat,
+    description = "Create Or Update Transaction Attribute",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundCreateOrUpdateTransactionAttribute(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      transactionId=TransactionId(transactionIdExample.value),
+      transactionAttributeId=Some(transactionAttributeIdExample.value),
+      name="string",
+      attributeType=com.openbankproject.commons.model.enums.TransactionAttributeType.example,
+      value=valueExample.value)
+    ),
+    exampleInboundMessage = (
+     InBoundCreateOrUpdateTransactionAttribute(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= TransactionAttributeCommons(bankId=BankId(bankIdExample.value),
+      transactionId=TransactionId(transactionIdExample.value),
+      transactionAttributeId=transactionAttributeIdExample.value,
+      attributeType=com.openbankproject.commons.model.enums.TransactionAttributeType.example,
+      name=transactionAttributeNameExample.value,
+      value=transactionAttributeValueExample.value))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-
+  override def createOrUpdateTransactionAttribute(bankId: BankId, transactionId: TransactionId, transactionAttributeId: Option[String], name: String, attributeType: TransactionAttributeType.Value, value: String, callContext: Option[CallContext]): OBPReturnType[Box[TransactionAttribute]] = {
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateTransactionAttribute => OutBound, InBoundCreateOrUpdateTransactionAttribute => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, transactionId, transactionAttributeId, name, attributeType, value)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionAttributeCommons](callContext))        
   }
           
   messageDocs += createAccountAttributesDoc
@@ -5141,14 +5175,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createAccountAttributes(bankId: BankId, accountId: AccountId, productCode: ProductCode, accountAttributes: List[ProductAttribute], callContext: Option[CallContext]): OBPReturnType[Box[List[AccountAttribute]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateAccountAttributes => InBound, OutBoundCreateAccountAttributes => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId, productCode, accountAttributes)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[AccountAttributeCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateAccountAttributes => OutBound, InBoundCreateAccountAttributes => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, productCode, accountAttributes)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[AccountAttributeCommons]](callContext))        
   }
           
   messageDocs += getAccountAttributesByAccountDoc
@@ -5178,14 +5208,213 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getAccountAttributesByAccount(bankId: BankId, accountId: AccountId, callContext: Option[CallContext]): OBPReturnType[Box[List[AccountAttribute]]] = {
-    
+        import com.openbankproject.commons.dto.{OutBoundGetAccountAttributesByAccount => OutBound, InBoundGetAccountAttributesByAccount => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[AccountAttributeCommons]](callContext))        
+  }
+          
+  messageDocs += getCustomerAttributesDoc
+  def getCustomerAttributesDoc = MessageDoc(
+    process = "obp.getCustomerAttributes",
+    messageFormat = messageFormat,
+    description = "Get Customer Attributes",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetCustomerAttributes(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      customerId=CustomerId(customerIdExample.value))
+    ),
+    exampleInboundMessage = (
+     InBoundGetCustomerAttributes(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=List( CustomerAttributeCommons(bankId=BankId(bankIdExample.value),
+      customerId=CustomerId(customerIdExample.value),
+      customerAttributeId=customerAttributeIdExample.value,
+      attributeType=com.openbankproject.commons.model.enums.CustomerAttributeType.example,
+      name=customerAttributeNameExample.value,
+      value=customerAttributeValueExample.value)))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
-        import com.openbankproject.commons.dto.{InBoundGetAccountAttributesByAccount => InBound, OutBoundGetAccountAttributesByAccount => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, accountId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[AccountAttributeCommons]](callContext))
+  override def getCustomerAttributes(bankId: BankId, customerId: CustomerId, callContext: Option[CallContext]): OBPReturnType[Box[List[CustomerAttribute]]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerAttributes => OutBound, InBoundGetCustomerAttributes => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CustomerAttributeCommons]](callContext))        
+  }
+          
+  messageDocs += getCustomerIdsByAttributeNameValuesDoc
+  def getCustomerIdsByAttributeNameValuesDoc = MessageDoc(
+    process = "obp.getCustomerIdsByAttributeNameValues",
+    messageFormat = messageFormat,
+    description = "Get Customer Ids By Attribute Name Values",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetCustomerIdsByAttributeNameValues(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      nameValues=Map("some_name" -> List("name1", "name2")))
+    ),
+    exampleInboundMessage = (
+     InBoundGetCustomerIdsByAttributeNameValues(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=List("string"))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
+  override def getCustomerIdsByAttributeNameValues(bankId: BankId, nameValues: Map[String,List[String]], callContext: Option[CallContext]): OBPReturnType[Box[List[String]]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerIdsByAttributeNameValues => OutBound, InBoundGetCustomerIdsByAttributeNameValues => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, nameValues)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[String]](callContext))        
+  }
+          
+  messageDocs += getCustomerAttributesForCustomersDoc
+  def getCustomerAttributesForCustomersDoc = MessageDoc(
+    process = "obp.getCustomerAttributesForCustomers",
+    messageFormat = messageFormat,
+    description = "Get Customer Attributes For Customers",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetCustomerAttributesForCustomers(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      customers=List( CustomerCommons(customerId=customerIdExample.value,
+      bankId=bankIdExample.value,
+      number=customerNumberExample.value,
+      legalName=legalNameExample.value,
+      mobileNumber=mobileNumberExample.value,
+      email=emailExample.value,
+      faceImage= CustomerFaceImage(date=parseDate(customerFaceImageDateExample.value).getOrElse(sys.error("customerFaceImageDateExample.value is not validate date format.")),
+      url=urlExample.value),
+      dateOfBirth=parseDate(dateOfBirthExample.value).getOrElse(sys.error("dateOfBirthExample.value is not validate date format.")),
+      relationshipStatus=relationshipStatusExample.value,
+      dependents=dependentsExample.value.toInt,
+      dobOfDependents=dobOfDependentsExample.value.split("[,;]").map(parseDate).flatMap(_.toSeq).toList,
+      highestEducationAttained=highestEducationAttainedExample.value,
+      employmentStatus=employmentStatusExample.value,
+      creditRating= CreditRating(rating=ratingExample.value,
+      source=sourceExample.value),
+      creditLimit= CreditLimit(currency=currencyExample.value,
+      amount=creditLimitAmountExample.value),
+      kycStatus=kycStatusExample.value.toBoolean,
+      lastOkDate=parseDate(customerLastOkDateExample.value).getOrElse(sys.error("customerLastOkDateExample.value is not validate date format.")),
+      title=customerTitleExample.value,
+      branchId=branchIdExample.value,
+      nameSuffix=nameSuffixExample.value)))
+    ),
+    exampleInboundMessage = (
+     InBoundGetCustomerAttributesForCustomers(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      value= List(
+         CustomerAndAttribute(
+             MessageDocsSwaggerDefinitions.customerCommons,
+             List(MessageDocsSwaggerDefinitions.customerAttribute)
+          )
+         )
+      )
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
 
+  override def getCustomerAttributesForCustomers(customers: List[Customer], callContext: Option[CallContext]): OBPReturnType[Box[List[(Customer, List[CustomerAttribute])]]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerAttributesForCustomers => OutBound, InBoundGetCustomerAttributesForCustomers => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customers)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[(Customer, List[CustomerAttribute])]](callContext))        
+  }
+          
+  messageDocs += getTransactionIdsByAttributeNameValuesDoc
+  def getTransactionIdsByAttributeNameValuesDoc = MessageDoc(
+    process = "obp.getTransactionIdsByAttributeNameValues",
+    messageFormat = messageFormat,
+    description = "Get Transaction Ids By Attribute Name Values",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetTransactionIdsByAttributeNameValues(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      nameValues=Map("some_name" -> List("name1", "name2")))
+    ),
+    exampleInboundMessage = (
+     InBoundGetTransactionIdsByAttributeNameValues(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=List("string"))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
+
+  override def getTransactionIdsByAttributeNameValues(bankId: BankId, nameValues: Map[String,List[String]], callContext: Option[CallContext]): OBPReturnType[Box[List[String]]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionIdsByAttributeNameValues => OutBound, InBoundGetTransactionIdsByAttributeNameValues => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, nameValues)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[String]](callContext))        
+  }
+          
+  messageDocs += getTransactionAttributesDoc
+  def getTransactionAttributesDoc = MessageDoc(
+    process = "obp.getTransactionAttributes",
+    messageFormat = messageFormat,
+    description = "Get Transaction Attributes",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetTransactionAttributes(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=BankId(bankIdExample.value),
+      transactionId=TransactionId(transactionIdExample.value))
+    ),
+    exampleInboundMessage = (
+     InBoundGetTransactionAttributes(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=List( TransactionAttributeCommons(bankId=BankId(bankIdExample.value),
+      transactionId=TransactionId(transactionIdExample.value),
+      transactionAttributeId=transactionAttributeIdExample.value,
+      attributeType=com.openbankproject.commons.model.enums.TransactionAttributeType.example,
+      name=transactionAttributeNameExample.value,
+      value=transactionAttributeValueExample.value)))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
+
+  override def getTransactionAttributes(bankId: BankId, transactionId: TransactionId, callContext: Option[CallContext]): OBPReturnType[Box[List[TransactionAttribute]]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetTransactionAttributes => OutBound, InBoundGetTransactionAttributes => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, transactionId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[TransactionAttributeCommons]](callContext))        
+  }
+          
+  messageDocs += getCustomerAttributeByIdDoc
+  def getCustomerAttributeByIdDoc = MessageDoc(
+    process = "obp.getCustomerAttributeById",
+    messageFormat = messageFormat,
+    description = "Get Customer Attribute By Id",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundGetCustomerAttributeById(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      customerAttributeId=customerAttributeIdExample.value)
+    ),
+    exampleInboundMessage = (
+     InBoundGetCustomerAttributeById(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= CustomerAttributeCommons(bankId=BankId(bankIdExample.value),
+      customerId=CustomerId(customerIdExample.value),
+      customerAttributeId=customerAttributeIdExample.value,
+      attributeType=com.openbankproject.commons.model.enums.CustomerAttributeType.example,
+      name=customerAttributeNameExample.value,
+      value=customerAttributeValueExample.value))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
+
+  override def getCustomerAttributeById(customerAttributeId: String, callContext: Option[CallContext]): OBPReturnType[Box[CustomerAttribute]] = {
+        import com.openbankproject.commons.dto.{OutBoundGetCustomerAttributeById => OutBound, InBoundGetCustomerAttributeById => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerAttributeId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerAttributeCommons](callContext))        
   }
           
   messageDocs += createOrUpdateCardAttributeDoc
@@ -5218,14 +5447,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createOrUpdateCardAttribute(bankId: Option[BankId], cardId: Option[String], cardAttributeId: Option[String], name: String, cardAttributeType: CardAttributeType.Value, value: String, callContext: Option[CallContext]): OBPReturnType[Box[CardAttribute]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateOrUpdateCardAttribute => InBound, OutBoundCreateOrUpdateCardAttribute => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, cardId, cardAttributeId, name, cardAttributeType, value)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CardAttributeCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateCardAttribute => OutBound, InBoundCreateOrUpdateCardAttribute => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, cardId, cardAttributeId, name, cardAttributeType, value)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CardAttributeCommons](callContext))        
   }
           
   messageDocs += getCardAttributeByIdDoc
@@ -5253,14 +5478,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCardAttributeById(cardAttributeId: String, callContext: Option[CallContext]): OBPReturnType[Box[CardAttribute]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCardAttributeById => InBound, OutBoundGetCardAttributeById => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , cardAttributeId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CardAttributeCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCardAttributeById => OutBound, InBoundGetCardAttributeById => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, cardAttributeId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CardAttributeCommons](callContext))        
   }
           
   messageDocs += getCardAttributesFromProviderDoc
@@ -5288,14 +5509,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getCardAttributesFromProvider(cardId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[CardAttribute]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetCardAttributesFromProvider => InBound, OutBoundGetCardAttributesFromProvider => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , cardId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[CardAttributeCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetCardAttributesFromProvider => OutBound, InBoundGetCardAttributesFromProvider => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, cardId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[CardAttributeCommons]](callContext))        
   }
           
   messageDocs += createAccountApplicationDoc
@@ -5325,14 +5542,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createAccountApplication(productCode: ProductCode, userId: Option[String], customerId: Option[String], callContext: Option[CallContext]): OBPReturnType[Box[AccountApplication]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateAccountApplication => InBound, OutBoundCreateAccountApplication => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , productCode, userId, customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AccountApplicationCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateAccountApplication => OutBound, InBoundCreateAccountApplication => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, productCode, userId, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AccountApplicationCommons](callContext))        
   }
           
   messageDocs += getAllAccountApplicationDoc
@@ -5359,14 +5572,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getAllAccountApplication(callContext: Option[CallContext]): OBPReturnType[Box[List[AccountApplication]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetAllAccountApplication => InBound, OutBoundGetAllAccountApplication => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull )
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[AccountApplicationCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetAllAccountApplication => OutBound, InBoundGetAllAccountApplication => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[AccountApplicationCommons]](callContext))        
   }
           
   messageDocs += getAccountApplicationByIdDoc
@@ -5394,14 +5603,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getAccountApplicationById(accountApplicationId: String, callContext: Option[CallContext]): OBPReturnType[Box[AccountApplication]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetAccountApplicationById => InBound, OutBoundGetAccountApplicationById => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , accountApplicationId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AccountApplicationCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetAccountApplicationById => OutBound, InBoundGetAccountApplicationById => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, accountApplicationId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AccountApplicationCommons](callContext))        
   }
           
   messageDocs += updateAccountApplicationStatusDoc
@@ -5430,14 +5635,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def updateAccountApplicationStatus(accountApplicationId: String, status: String, callContext: Option[CallContext]): OBPReturnType[Box[AccountApplication]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundUpdateAccountApplicationStatus => InBound, OutBoundUpdateAccountApplicationStatus => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , accountApplicationId, status)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[AccountApplicationCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundUpdateAccountApplicationStatus => OutBound, InBoundUpdateAccountApplicationStatus => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, accountApplicationId, status)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[AccountApplicationCommons](callContext))        
   }
           
   messageDocs += getOrCreateProductCollectionDoc
@@ -5462,14 +5663,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getOrCreateProductCollection(collectionCode: String, productCodes: List[String], callContext: Option[CallContext]): OBPReturnType[Box[List[ProductCollection]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetOrCreateProductCollection => InBound, OutBoundGetOrCreateProductCollection => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , collectionCode, productCodes)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[ProductCollectionCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetOrCreateProductCollection => OutBound, InBoundGetOrCreateProductCollection => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, collectionCode, productCodes)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[ProductCollectionCommons]](callContext))        
   }
           
   messageDocs += getProductCollectionDoc
@@ -5493,14 +5690,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getProductCollection(collectionCode: String, callContext: Option[CallContext]): OBPReturnType[Box[List[ProductCollection]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetProductCollection => InBound, OutBoundGetProductCollection => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , collectionCode)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[ProductCollectionCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetProductCollection => OutBound, InBoundGetProductCollection => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, collectionCode)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[ProductCollectionCommons]](callContext))        
   }
           
   messageDocs += getOrCreateProductCollectionItemDoc
@@ -5525,14 +5718,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getOrCreateProductCollectionItem(collectionCode: String, memberProductCodes: List[String], callContext: Option[CallContext]): OBPReturnType[Box[List[ProductCollectionItem]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetOrCreateProductCollectionItem => InBound, OutBoundGetOrCreateProductCollectionItem => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , collectionCode, memberProductCodes)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[ProductCollectionItemCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetOrCreateProductCollectionItem => OutBound, InBoundGetOrCreateProductCollectionItem => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, collectionCode, memberProductCodes)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[ProductCollectionItemCommons]](callContext))        
   }
           
   messageDocs += getProductCollectionItemDoc
@@ -5556,14 +5745,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getProductCollectionItem(collectionCode: String, callContext: Option[CallContext]): OBPReturnType[Box[List[ProductCollectionItem]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetProductCollectionItem => InBound, OutBoundGetProductCollectionItem => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , collectionCode)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[ProductCollectionItemCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetProductCollectionItem => OutBound, InBoundGetProductCollectionItem => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, collectionCode)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[ProductCollectionItemCommons]](callContext))        
   }
           
   messageDocs += getProductCollectionItemsTreeDoc
@@ -5604,14 +5789,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getProductCollectionItemsTree(collectionCode: String, bankId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[(ProductCollectionItem, Product, List[ProductAttribute])]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetProductCollectionItemsTree => InBound, OutBoundGetProductCollectionItemsTree => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , collectionCode, bankId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[(ProductCollectionItemCommons, ProductCommons, List[ProductAttributeCommons])]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetProductCollectionItemsTree => OutBound, InBoundGetProductCollectionItemsTree => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, collectionCode, bankId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[(ProductCollectionItemCommons, ProductCommons, List[ProductAttributeCommons])]](callContext))        
   }
           
   messageDocs += createMeetingDoc
@@ -5675,14 +5856,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createMeeting(bankId: BankId, staffUser: User, customerUser: User, providerId: String, purposeId: String, when: Date, sessionId: String, customerToken: String, staffToken: String, creator: ContactDetails, invitees: List[Invitee], callContext: Option[CallContext]): OBPReturnType[Box[Meeting]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateMeeting => InBound, OutBoundCreateMeeting => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, staffUser, customerUser, providerId, purposeId, when, sessionId, customerToken, staffToken, creator, invitees)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[MeetingCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateMeeting => OutBound, InBoundCreateMeeting => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, staffUser, customerUser, providerId, purposeId, when, sessionId, customerToken, staffToken, creator, invitees)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[MeetingCommons](callContext))        
   }
           
   messageDocs += getMeetingsDoc
@@ -5727,14 +5904,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getMeetings(bankId: BankId, user: User, callContext: Option[CallContext]): OBPReturnType[Box[List[Meeting]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetMeetings => InBound, OutBoundGetMeetings => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, user)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[MeetingCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetMeetings => OutBound, InBoundGetMeetings => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, user)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[MeetingCommons]](callContext))        
   }
           
   messageDocs += getMeetingDoc
@@ -5780,14 +5953,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getMeeting(bankId: BankId, user: User, meetingId: String, callContext: Option[CallContext]): OBPReturnType[Box[Meeting]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetMeeting => InBound, OutBoundGetMeeting => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, user, meetingId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[MeetingCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetMeeting => OutBound, InBoundGetMeeting => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, user, meetingId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[MeetingCommons](callContext))        
   }
           
   messageDocs += createOrUpdateKycCheckDoc
@@ -5828,14 +5997,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createOrUpdateKycCheck(bankId: String, customerId: String, id: String, customerNumber: String, date: Date, how: String, staffUserId: String, mStaffName: String, mSatisfied: Boolean, comments: String, callContext: Option[CallContext]): OBPReturnType[Box[KycCheck]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateOrUpdateKycCheck => InBound, OutBoundCreateOrUpdateKycCheck => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, customerId, id, customerNumber, date, how, staffUserId, mStaffName, mSatisfied, comments)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[KycCheckCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateKycCheck => OutBound, InBoundCreateOrUpdateKycCheck => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, customerId, id, customerNumber, date, how, staffUserId, mStaffName, mSatisfied, comments)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[KycCheckCommons](callContext))        
   }
           
   messageDocs += createOrUpdateKycDocumentDoc
@@ -5874,14 +6039,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createOrUpdateKycDocument(bankId: String, customerId: String, id: String, customerNumber: String, `type`: String, number: String, issueDate: Date, issuePlace: String, expiryDate: Date, callContext: Option[CallContext]): OBPReturnType[Box[KycDocument]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateOrUpdateKycDocument => InBound, OutBoundCreateOrUpdateKycDocument => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, customerId, id, customerNumber, `type`, number, issueDate, issuePlace, expiryDate)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[KycDocument](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateKycDocument => OutBound, InBoundCreateOrUpdateKycDocument => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, customerId, id, customerNumber, `type`, number, issueDate, issuePlace, expiryDate)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[KycDocument](callContext))        
   }
           
   messageDocs += createOrUpdateKycMediaDoc
@@ -5920,14 +6081,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createOrUpdateKycMedia(bankId: String, customerId: String, id: String, customerNumber: String, `type`: String, url: String, date: Date, relatesToKycDocumentId: String, relatesToKycCheckId: String, callContext: Option[CallContext]): OBPReturnType[Box[KycMedia]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateOrUpdateKycMedia => InBound, OutBoundCreateOrUpdateKycMedia => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, customerId, id, customerNumber, `type`, url, date, relatesToKycDocumentId, relatesToKycCheckId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[KycMediaCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateKycMedia => OutBound, InBoundCreateOrUpdateKycMedia => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, customerId, id, customerNumber, `type`, url, date, relatesToKycDocumentId, relatesToKycCheckId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[KycMediaCommons](callContext))        
   }
           
   messageDocs += createOrUpdateKycStatusDoc
@@ -5958,14 +6115,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createOrUpdateKycStatus(bankId: String, customerId: String, customerNumber: String, ok: Boolean, date: Date, callContext: Option[CallContext]): OBPReturnType[Box[KycStatus]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateOrUpdateKycStatus => InBound, OutBoundCreateOrUpdateKycStatus => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , bankId, customerId, customerNumber, ok, date)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[KycStatusCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateOrUpdateKycStatus => OutBound, InBoundCreateOrUpdateKycStatus => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, customerId, customerNumber, ok, date)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[KycStatusCommons](callContext))        
   }
           
   messageDocs += getKycChecksDoc
@@ -5997,14 +6150,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getKycChecks(customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[KycCheck]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetKycChecks => InBound, OutBoundGetKycChecks => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[KycCheckCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetKycChecks => OutBound, InBoundGetKycChecks => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[KycCheckCommons]](callContext))        
   }
           
   messageDocs += getKycDocumentsDoc
@@ -6035,14 +6184,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getKycDocuments(customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[KycDocument]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetKycDocuments => InBound, OutBoundGetKycDocuments => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[KycDocumentCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetKycDocuments => OutBound, InBoundGetKycDocuments => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[KycDocumentCommons]](callContext))        
   }
           
   messageDocs += getKycMediasDoc
@@ -6073,14 +6218,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getKycMedias(customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[KycMedia]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetKycMedias => InBound, OutBoundGetKycMedias => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[KycMediaCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetKycMedias => OutBound, InBoundGetKycMedias => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[KycMediaCommons]](callContext))        
   }
           
   messageDocs += getKycStatusesDoc
@@ -6107,14 +6248,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def getKycStatuses(customerId: String, callContext: Option[CallContext]): OBPReturnType[Box[List[KycStatus]]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundGetKycStatuses => InBound, OutBoundGetKycStatuses => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , customerId)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[List[KycStatusCommons]](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundGetKycStatuses => OutBound, InBoundGetKycStatuses => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[List[KycStatusCommons]](callContext))        
   }
           
   messageDocs += createMessageDoc
@@ -6150,14 +6287,10 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def createMessage(user: User, bankId: BankId, message: String, fromDepartment: String, fromPerson: String, callContext: Option[CallContext]): OBPReturnType[Box[CustomerMessage]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundCreateMessage => InBound, OutBoundCreateMessage => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , user, bankId, message, fromDepartment, fromPerson)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[CustomerMessageCommons](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundCreateMessage => OutBound, InBoundCreateMessage => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, user, bankId, message, fromDepartment, fromPerson)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[CustomerMessageCommons](callContext))        
   }
           
   messageDocs += makeHistoricalPaymentDoc
@@ -6221,16 +6354,81 @@ object AkkaConnector_vDec2018 extends Connector with AkkaConnectorActorInit {
   )
 
   override def makeHistoricalPayment(fromAccount: BankAccount, toAccount: BankAccount, posted: Date, completed: Date, amount: BigDecimal, description: String, transactionRequestType: String, chargePolicy: String, callContext: Option[CallContext]): OBPReturnType[Box[TransactionId]] = {
-    
-
-        import com.openbankproject.commons.dto.{InBoundMakeHistoricalPayment => InBound, OutBoundMakeHistoricalPayment => OutBound}
-        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull , fromAccount, toAccount, posted, completed, amount, description, transactionRequestType, chargePolicy)
-        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !!(_))
-        response.map(convertToTuple[TransactionId](callContext))
-
-
+        import com.openbankproject.commons.dto.{OutBoundMakeHistoricalPayment => OutBound, InBoundMakeHistoricalPayment => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, fromAccount, toAccount, posted, completed, amount, description, transactionRequestType, chargePolicy)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[TransactionId](callContext))        
   }
           
-// ---------- create on Mon Jun 15 12:48:47 CST 2020
-//---------------- dynamic end ---------------------please don't modify this line         
+  messageDocs += createDirectDebitDoc
+  def createDirectDebitDoc = MessageDoc(
+    process = "obp.createDirectDebit",
+    messageFormat = messageFormat,
+    description = "Create Direct Debit",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundCreateDirectDebit(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      bankId=bankIdExample.value,
+      accountId=accountIdExample.value,
+      customerId=customerIdExample.value,
+      userId=userIdExample.value,
+      counterpartyId=counterpartyIdExample.value,
+      dateSigned=new Date(),
+      dateStarts=new Date(),
+      dateExpires=Some(new Date()))
+    ),
+    exampleInboundMessage = (
+     InBoundCreateDirectDebit(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data= DirectDebitTraitCommons(directDebitId="string",
+      bankId=bankIdExample.value,
+      accountId=accountIdExample.value,
+      customerId=customerIdExample.value,
+      userId=userIdExample.value,
+      counterpartyId=counterpartyIdExample.value,
+      dateSigned=new Date(),
+      dateCancelled=new Date(),
+      dateStarts=new Date(),
+      dateExpires=new Date(),
+      active=true))
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
+
+  override def createDirectDebit(bankId: String, accountId: String, customerId: String, userId: String, counterpartyId: String, dateSigned: Date, dateStarts: Date, dateExpires: Option[Date], callContext: Option[CallContext]): OBPReturnType[Box[DirectDebitTrait]] = {
+        import com.openbankproject.commons.dto.{OutBoundCreateDirectDebit => OutBound, InBoundCreateDirectDebit => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, bankId, accountId, customerId, userId, counterpartyId, dateSigned, dateStarts, dateExpires)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[DirectDebitTraitCommons](callContext))        
+  }
+          
+  messageDocs += deleteCustomerAttributeDoc
+  def deleteCustomerAttributeDoc = MessageDoc(
+    process = "obp.deleteCustomerAttribute",
+    messageFormat = messageFormat,
+    description = "Delete Customer Attribute",
+    outboundTopic = None,
+    inboundTopic = None,
+    exampleOutboundMessage = (
+     OutBoundDeleteCustomerAttribute(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
+      customerAttributeId=customerAttributeIdExample.value)
+    ),
+    exampleInboundMessage = (
+     InBoundDeleteCustomerAttribute(inboundAdapterCallContext=MessageDocsSwaggerDefinitions.inboundAdapterCallContext,
+      status=MessageDocsSwaggerDefinitions.inboundStatus,
+      data=true)
+    ),
+    adapterImplementation = Some(AdapterImplementation("- Core", 1))
+  )
+
+  override def deleteCustomerAttribute(customerAttributeId: String, callContext: Option[CallContext]): OBPReturnType[Box[Boolean]] = {
+        import com.openbankproject.commons.dto.{OutBoundDeleteCustomerAttribute => OutBound, InBoundDeleteCustomerAttribute => InBound}
+        val req = OutBound(callContext.map(_.toOutboundAdapterCallContext).orNull, customerAttributeId)
+        val response: Future[Box[InBound]] = (southSideActor ? req).mapTo[InBound].map(Box !! _)
+        response.map(convertToTuple[Boolean](callContext))        
+  }
+          
+// ---------- create on Tue Jun 16 11:42:17 CST 2020
+//---------------- dynamic end ---------------------please don't modify this line              
 }
