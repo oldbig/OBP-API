@@ -74,7 +74,7 @@ trait StoredProcedureConnector_vDec2019 extends Connector with MdcLoggable {
   val connectorName = "stored_procedure_vDec2019"
 
 //---------------- dynamic start -------------------please don't modify this line
-// ---------- created on 2020-07-14T16:11:11Z
+// ---------- created on 2020-07-17T14:10:05Z
 
   messageDocs += getAdapterInfoDoc
   def getAdapterInfoDoc = MessageDoc(
@@ -2844,20 +2844,20 @@ trait StoredProcedureConnector_vDec2019 extends Connector with MdcLoggable {
       value=accountRuleValueExample.value)),
       accountHolder=bankAccountAccountHolderExample.value),
       toCounterparty= CounterpartyTraitCommons(createdByUserId="string",
-      name="string",
+      name=counterpartyNameExample.value,
       description="string",
       thisBankId="string",
       thisAccountId="string",
       thisViewId="string",
       counterpartyId=counterpartyIdExample.value,
-      otherAccountRoutingScheme=accountRoutingSchemeExample.value,
-      otherAccountRoutingAddress=accountRoutingAddressExample.value,
-      otherAccountSecondaryRoutingScheme="string",
-      otherAccountSecondaryRoutingAddress="string",
-      otherBankRoutingScheme=bankRoutingSchemeExample.value,
-      otherBankRoutingAddress=bankRoutingAddressExample.value,
-      otherBranchRoutingScheme=branchRoutingSchemeExample.value,
-      otherBranchRoutingAddress=branchRoutingAddressExample.value,
+      otherAccountRoutingScheme=counterpartyOtherAccountRoutingSchemeExample.value,
+      otherAccountRoutingAddress=counterpartyOtherAccountRoutingAddressExample.value,
+      otherAccountSecondaryRoutingScheme=counterpartyOtherAccountSecondaryRoutingSchemeExample.value,
+      otherAccountSecondaryRoutingAddress=counterpartyOtherAccountSecondaryRoutingAddressExample.value,
+      otherBankRoutingScheme=counterpartyOtherBankRoutingSchemeExample.value,
+      otherBankRoutingAddress=counterpartyOtherBankRoutingAddressExample.value,
+      otherBranchRoutingScheme=counterpartyOtherBranchRoutingSchemeExample.value,
+      otherBranchRoutingAddress=counterpartyOtherBranchRoutingAddressExample.value,
       isBeneficiary=isBeneficiaryExample.value.toBoolean,
       bespoke=List( CounterpartyBespoke(key=keyExample.value,
       value=valueExample.value))),
@@ -2935,20 +2935,20 @@ trait StoredProcedureConnector_vDec2019 extends Connector with MdcLoggable {
       value=accountRuleValueExample.value)),
       accountHolder=bankAccountAccountHolderExample.value),
       toCounterparty= CounterpartyTraitCommons(createdByUserId="string",
-      name="string",
+      name=counterpartyNameExample.value,
       description="string",
       thisBankId="string",
       thisAccountId="string",
       thisViewId="string",
       counterpartyId=counterpartyIdExample.value,
-      otherAccountRoutingScheme=accountRoutingSchemeExample.value,
-      otherAccountRoutingAddress=accountRoutingAddressExample.value,
-      otherAccountSecondaryRoutingScheme="string",
-      otherAccountSecondaryRoutingAddress="string",
-      otherBankRoutingScheme=bankRoutingSchemeExample.value,
-      otherBankRoutingAddress=bankRoutingAddressExample.value,
-      otherBranchRoutingScheme=branchRoutingSchemeExample.value,
-      otherBranchRoutingAddress=branchRoutingAddressExample.value,
+      otherAccountRoutingScheme=counterpartyOtherAccountRoutingSchemeExample.value,
+      otherAccountRoutingAddress=counterpartyOtherAccountRoutingAddressExample.value,
+      otherAccountSecondaryRoutingScheme=counterpartyOtherAccountSecondaryRoutingSchemeExample.value,
+      otherAccountSecondaryRoutingAddress=counterpartyOtherAccountSecondaryRoutingAddressExample.value,
+      otherBankRoutingScheme=counterpartyOtherBankRoutingSchemeExample.value,
+      otherBankRoutingAddress=counterpartyOtherBankRoutingAddressExample.value,
+      otherBranchRoutingScheme=counterpartyOtherBranchRoutingSchemeExample.value,
+      otherBranchRoutingAddress=counterpartyOtherBranchRoutingAddressExample.value,
       isBeneficiary=isBeneficiaryExample.value.toBoolean,
       bespoke=List( CounterpartyBespoke(key=keyExample.value,
       value=valueExample.value))),
@@ -3307,7 +3307,7 @@ trait StoredProcedureConnector_vDec2019 extends Connector with MdcLoggable {
      OutBoundUpdateCustomerGeneralData(outboundAdapterCallContext=MessageDocsSwaggerDefinitions.outboundAdapterCallContext,
       customerId=customerIdExample.value,
       legalName=Some(legalNameExample.value),
-      faceImage=Some( CustomerFaceImage(date=toDate(dateExample),
+      faceImage=Some( CustomerFaceImage(date=toDate(customerFaceImageDateExample),
       url=urlExample.value)),
       dateOfBirth=Some(toDate(dateOfBirthExample)),
       relationshipStatus=Some(relationshipStatusExample.value),
@@ -5649,8 +5649,8 @@ trait StoredProcedureConnector_vDec2019 extends Connector with MdcLoggable {
         response.map(convertToTuple[Boolean](callContext))        
   }
           
-// ---------- created on 2020-07-14T16:11:11Z
-//---------------- dynamic end ---------------------please don't modify this line            
+// ---------- created on 2020-07-17T14:10:05Z
+//---------------- dynamic end ---------------------please don't modify this line                 
 
   private val availableOperation = DynamicEntityOperation.values.map(it => s""""$it"""").mkString("[", ", ", "]")
 
